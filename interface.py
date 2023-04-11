@@ -1,5 +1,8 @@
 import tkinter as tk
 from PIL import Image, ImageTk
+import random
+import time
+import robot
 
 # Définir les dimensions de la grille
 GRID_WIDTH = 16
@@ -12,8 +15,14 @@ BUILDING_HEIGHT = 50
 # Définir les couleurs pour les cases de la grille
 GRID_COLORS = ["white", "light gray", "gray"]
 
+
+def on_button_click():
+    print("Button clicked")
+
+
 # Créer une fenêtre Tkinter
 root = tk.Tk()
+root.title("Robot City")
 
 # Charger les images de bâtiments à partir des fichiers PNG
 building_images = {
@@ -21,12 +30,42 @@ building_images = {
     "entreprise": ImageTk.PhotoImage(Image.open("entreprise.png").resize((BUILDING_WIDTH, BUILDING_HEIGHT))),
     "loisir": ImageTk.PhotoImage(Image.open("loisir.png").resize((BUILDING_WIDTH, BUILDING_HEIGHT))),
     "rue": ImageTk.PhotoImage(Image.open("rue.png").resize((BUILDING_WIDTH, BUILDING_HEIGHT))),
-    "maison": ImageTk.PhotoImage(Image.open("maison.png").resize((BUILDING_WIDTH, BUILDING_HEIGHT)))
+    "maison": ImageTk.PhotoImage(Image.open("maison.png").resize((BUILDING_WIDTH, BUILDING_HEIGHT))),
+    "robot": ImageTk.PhotoImage(Image.open("robot.png").resize((BUILDING_WIDTH, BUILDING_HEIGHT)))
 }
 
+
+# Définir la position initiale du robot
+robot_position = (2 * BUILDING_WIDTH, 2 * BUILDING_HEIGHT)
+
+
+# Dessiner l'image du robot à sa position actuelle sur la grille
+def draw_robot():
+    global robot_position
+    x, y = robot_position
+    if x < 0 or x >= GRID_WIDTH*BUILDING_WIDTH or y < 0 or y >= GRID_HEIGHT*BUILDING_HEIGHT:
+        # Le robot est sorti de la grille
+        return
+    i = y // BUILDING_HEIGHT
+    j = x // BUILDING_WIDTH
+    if grid[i][j] != "R":
+        # Le robot est sur une case qui n'est pas une rue
+        return
+    canvas.create_image(x, y, anchor="nw", image=building_images["robot"])
+
+
+button = tk.Button(root, text="Click me!", command=on_button_click)
+button.pack()
 # Créer un canevas Tkinter pour afficher la grille
 canvas = tk.Canvas(root, width=GRID_WIDTH*BUILDING_WIDTH, height=GRID_HEIGHT*BUILDING_HEIGHT)
 canvas.pack()
+
+# Dessiner l'image du robot à sa position actuelle sur la grille
+def draw_robot():
+    global robot_position
+    x, y = robot_position
+    canvas.create_image(x, y, anchor="nw", image=building_images["robot"])
+
 
 # Lire le fichier texte mapcity.txt pour placer les bâtiments sur la grille
 with open("mapcity.txt", "r") as f:
@@ -51,10 +90,49 @@ with open("mapcity.txt", "r") as f:
             x = j * BUILDING_WIDTH
             y = i * BUILDING_HEIGHT
             canvas.create_rectangle(x, y, x+BUILDING_WIDTH, y+BUILDING_HEIGHT, fill=color)
+
             if building_type != "0":
                 building_image = building_images[{"M": "maison", "R": "rue", "C": "commerce", "E": "entreprise", "D": "loisir"}[building_type]]
                 canvas.create_image(x, y, anchor="nw", image=building_image)
 
+ROBOT_SPEED = 500
+
+def move_robot():
+    global robot_position
+    x, y = robot_position
+    
+    # Liste des directions possibles
+    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+    
+    # Choisir une direction aléatoire
+    dx, dy = random.choice(directions)
+    
+    # Calculer la nouvelle position
+    new_x = x + dx * BUILDING_WIDTH
+    new_y = y + dy * BUILDING_HEIGHT
+    
+    # Vérifier si la nouvelle position est valide
+    if new_x < 0 or new_x >= GRID_WIDTH * BUILDING_WIDTH or new_y < 0 or new_y >= GRID_HEIGHT * BUILDING_HEIGHT:
+        return
+    if building_type != "R":
+        return
+    
+    # Effacer l'image du robot à sa position actuelle sur la grille
+    canvas.delete("robot")
+    
+    # Mettre à jour la position du robot
+    robot_position = (new_x, new_y)
+    
+    # Dessiner l'image du robot à sa nouvelle position sur la grille
+    draw_robot()
+
+
+# Boucle principale pour déplacer le robot
+while True:
+    draw_robot()  # dessiner le robot à sa position actuelle
+    root.update()  # mettre à jour la fenêtre Tkinter
+    time.sleep(ROBOT_SPEED / 1000)  # attendre un certain temps
+    move_robot()  # déplacer le robot aléatoireme
 
 # Démarrer la boucle Tkinter
 root.mainloop()
