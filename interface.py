@@ -2,6 +2,8 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import random
 import time
+
+from matplotlib.pyplot import grid
 import robot
 
 # Définir les dimensions de la grille
@@ -31,7 +33,7 @@ building_images = {
     "loisir": ImageTk.PhotoImage(Image.open("loisir.png").resize((BUILDING_WIDTH, BUILDING_HEIGHT))),
     "rue": ImageTk.PhotoImage(Image.open("rue.png").resize((BUILDING_WIDTH, BUILDING_HEIGHT))),
     "maison": ImageTk.PhotoImage(Image.open("maison.png").resize((BUILDING_WIDTH, BUILDING_HEIGHT))),
-    "robot": ImageTk.PhotoImage(Image.open("robot.png").resize((BUILDING_WIDTH, BUILDING_HEIGHT)))
+    "robot": ImageTk.PhotoImage(Image.open("tes2.png").resize((BUILDING_WIDTH, BUILDING_HEIGHT)))
 }
 
 

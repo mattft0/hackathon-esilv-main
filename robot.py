@@ -7,9 +7,11 @@ class Robot:
         self.y = 0
         self.directions = ["N", "S", "W", "E"]
 
+
     def move(self):
         # Choisir une direction aléatoire
         direction = random.choice(self.directions)
+
 
         # Calculer la nouvelle position en fonction de la direction choisie
         new_x, new_y = self.x, self.y
@@ -22,9 +24,11 @@ class Robot:
         elif direction == "E":
             new_x += 1
 
+
         # Vérifier que la nouvelle position est sur une case rue de la ville
         if self.city.get_building_type(new_x, new_y) == "R":
             self.x, self.y = new_x, new_y
+
 
     def get_position(self):
         return self.x, self.y
