@@ -2,13 +2,12 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import random
 import time
-
 from matplotlib.pyplot import grid
 import robot
 
 # Définir les dimensions de la grille
-GRID_WIDTH = 16
-GRID_HEIGHT = 20
+GRID_WIDTH = 20
+GRID_HEIGHT = 16
 
 # Définir les dimensions des images de bâtiments
 BUILDING_WIDTH = 50
@@ -16,10 +15,6 @@ BUILDING_HEIGHT = 50
 
 # Définir les couleurs pour les cases de la grille
 GRID_COLORS = ["white", "light gray", "gray"]
-
-
-def on_button_click():
-    print("Button clicked")
 
 
 # Créer une fenêtre Tkinter
@@ -33,13 +28,14 @@ building_images = {
     "loisir": ImageTk.PhotoImage(Image.open("loisir.png").resize((BUILDING_WIDTH, BUILDING_HEIGHT))),
     "rue": ImageTk.PhotoImage(Image.open("rue.png").resize((BUILDING_WIDTH, BUILDING_HEIGHT))),
     "maison": ImageTk.PhotoImage(Image.open("maison.png").resize((BUILDING_WIDTH, BUILDING_HEIGHT))),
-    "robot": ImageTk.PhotoImage(Image.open("tes2.png").resize((BUILDING_WIDTH, BUILDING_HEIGHT)))
+    "robot": ImageTk.PhotoImage(Image.open("tes2.png").resize((BUILDING_WIDTH, BUILDING_HEIGHT))),
 }
 
+robot_position = (100,100)
 
-# Définir la position initiale du robot
-robot_position = (2 * BUILDING_WIDTH, 2 * BUILDING_HEIGHT)
-
+robot_image = Image.open("tes2.png")
+robot_image = robot_image.resize((50, 50)) # Redimensionner l'image
+robot_photo = ImageTk.PhotoImage(robot_image)
 
 # Dessiner l'image du robot à sa position actuelle sur la grille
 def draw_robot():
@@ -53,28 +49,55 @@ def draw_robot():
     if grid[i][j] != "R":
         # Le robot est sur une case qui n'est pas une rue
         return
-    canvas.create_image(x, y, anchor="nw", image=building_images["robot"])
+    global image
+    image = canvas.create_image(x, y, image=robot_photo, anchor="nw")
+    
+    
+# Déplacer le robot d'une case dans la direction indiquée
+def move_robot():
+    canvas.delete(image)
+    global robot_position
+    x, y = robot_position
+    # Choisir une direction aléatoire
+    direction = random.choice(["up", "down", "left", "right"])
+
+    # Déplacer le robot d'une case dans la direction choisie
+    if direction == "up":
+        y -= BUILDING_HEIGHT
+    elif direction == "down":
+        y += BUILDING_HEIGHT
+    elif direction == "left":
+        x -= BUILDING_WIDTH
+    elif direction == "right":
+        x += BUILDING_WIDTH
+
+    robot_position = (x, y)
+
+    # Supprimer l'image du robot de la grille et la redessiner à sa nouvelle position
+    draw_robot()
 
 
-button = tk.Button(root, text="Click me!", command=on_button_click)
+
+
+
+button2 = tk.Button(root, text="Draw", command=draw_robot)
+button2.pack()
+button3 = tk.Button(root, text="Play", command=move_robot)
+button3.pack()
+button = tk.Button(root, text="Quit", command=root.destroy)
 button.pack()
 # Créer un canevas Tkinter pour afficher la grille
 canvas = tk.Canvas(root, width=GRID_WIDTH*BUILDING_WIDTH, height=GRID_HEIGHT*BUILDING_HEIGHT)
 canvas.pack()
 
-# Dessiner l'image du robot à sa position actuelle sur la grille
-def draw_robot():
-    global robot_position
-    x, y = robot_position
-    canvas.create_image(x, y, anchor="nw", image=building_images["robot"])
 
 
 # Lire le fichier texte mapcity.txt pour placer les bâtiments sur la grille
 with open("mapcity.txt", "r") as f:
+    grid = [[cell for cell in line.strip()] for line in f]
     for i in range(GRID_HEIGHT):
-        line = f.readline().strip().ljust(GRID_WIDTH, "0")
         for j in range(GRID_WIDTH):
-            building_type = line[j]
+            building_type = grid[i][j]
             if building_type == "M":
                 color_index = 2
             elif building_type == "C":
@@ -97,44 +120,6 @@ with open("mapcity.txt", "r") as f:
                 building_image = building_images[{"M": "maison", "R": "rue", "C": "commerce", "E": "entreprise", "D": "loisir"}[building_type]]
                 canvas.create_image(x, y, anchor="nw", image=building_image)
 
-ROBOT_SPEED = 500
-
-def move_robot():
-    global robot_position
-    x, y = robot_position
-    
-    # Liste des directions possibles
-    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-    
-    # Choisir une direction aléatoire
-    dx, dy = random.choice(directions)
-    
-    # Calculer la nouvelle position
-    new_x = x + dx * BUILDING_WIDTH
-    new_y = y + dy * BUILDING_HEIGHT
-    
-    # Vérifier si la nouvelle position est valide
-    if new_x < 0 or new_x >= GRID_WIDTH * BUILDING_WIDTH or new_y < 0 or new_y >= GRID_HEIGHT * BUILDING_HEIGHT:
-        return
-    if building_type != "R":
-        return
-    
-    # Effacer l'image du robot à sa position actuelle sur la grille
-    canvas.delete("robot")
-    
-    # Mettre à jour la position du robot
-    robot_position = (new_x, new_y)
-    
-    # Dessiner l'image du robot à sa nouvelle position sur la grille
-    draw_robot()
-
-
-# Boucle principale pour déplacer le robot
-while True:
-    draw_robot()  # dessiner le robot à sa position actuelle
-    root.update()  # mettre à jour la fenêtre Tkinter
-    time.sleep(ROBOT_SPEED / 1000)  # attendre un certain temps
-    move_robot()  # déplacer le robot aléatoireme
 
 # Démarrer la boucle Tkinter
 root.mainloop()
