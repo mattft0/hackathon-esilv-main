@@ -21,27 +21,30 @@ class Grid:
                 x0, y0 = j*30+5, i*30+5
                 x1, y1 = j*30+35, i*30+35
                 self.master.create_rectangle(x0, y0, x1, y1, fill=color)
-    
+        # draw robot
+        self.move_robot("")
+
     def move_robot(self, direction):
-        # check if move is valid
+        # move robot randomly in a valid direction
+        valid_directions = []
         row, col = self.robot_pos
-        if direction == "up" and row > 0 and self.grid[row-1][col] == 0:
-            row -= 1
-        elif direction == "down" and row < self.height-1 and self.grid[row+1][col] == 0:
-            row += 1
-        elif direction == "left" and col > 0 and self.grid[row][col-1] == 0:
-            col -= 1
-        elif direction == "right" and col < self.width-1 and self.grid[row][col+1] == 0:
-            col += 1
-        else:
-            return
-        # update robot position
-        self.robot_pos = (row, col)
+        if row > 0 and self.grid[row-1][col] == 0:
+            valid_directions.append("up")
+        if row < self.height-1 and self.grid[row+1][col] == 0:
+            valid_directions.append("down")
+        if col > 0 and self.grid[row][col-1] == 0:
+            valid_directions.append("left")
+        if col < self.width-1 and self.grid[row][col+1] == 0:
+            valid_directions.append("right")
+        if valid_directions:
+            direction = random.choice(valid_directions)
         # clear previous robot location and draw new one
         self.master.delete("robot")
         x0, y0 = col*30+10, row*30+10
         x1, y1 = col*30+30, row*30+30
         self.master.create_oval(x0, y0, x1, y1, fill="red", tags="robot")
+        # update robot position
+        self.robot_pos = (row, col)
 
 def create_random_grid():
     # create grid with random obstacles and empty spaces
@@ -60,10 +63,6 @@ def main():
     grid = Grid(canvas)
     grid.grid = create_random_grid()
     grid.draw_grid()
-    root.bind("<Up>", lambda event: grid.move_robot("up"))
-    root.bind("<Down>", lambda event: grid.move_robot("down"))
-    root.bind("<Left>", lambda event: grid.move_robot("left"))
-    root.bind("<Right>", lambda event: grid.move_robot("right"))
     root.mainloop()
 
 if __name__ == "__main__":
